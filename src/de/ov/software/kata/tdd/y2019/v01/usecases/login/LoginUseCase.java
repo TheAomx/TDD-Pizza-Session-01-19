@@ -12,7 +12,7 @@ import de.ov.software.kata.tdd.y2019.v01.utils.Context;
 
 public class LoginUseCase {
 	private final static int TOKEN_LENGTH = 128;
-	
+
 	private LoginSession createLoginSession(LoginRequestModel request, User user) {
 		LoginSession session = new LoginSession();
 		session.ipAddress = request.ipAddress;
@@ -22,25 +22,25 @@ public class LoginUseCase {
 		session.validUntil = LocalDateTime.now().plusDays(14);
 		return session;
 	}
-	
+
 	private String createRandomToken(int length) {
 		final String ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
 		final SecureRandom RANDOM = new SecureRandom();
-		
+
 		StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < length; ++i) {
-            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
-        }
-        return sb.toString();
+		for (int i = 0; i < length; ++i) {
+			sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+		}
+		return sb.toString();
 	}
 
 	public void handleLogin(LoginRequestModel request, LoginOutputBoundary presenter) {
 		LoginResponseModel response = new LoginResponseModel();
 		response.mail = request.mail;
-		
+
 		UserGateway userGateway = Context.userGateway;
 		Optional<User> userOptional = userGateway.findUserByMail(request.mail);
-		
+
 		if (!userOptional.isPresent()) {
 			response.loginState = LoginState.INVALID_MAIL;
 		} else {
@@ -55,7 +55,7 @@ public class LoginUseCase {
 				response.loginState = LoginState.INVALID_PASSWORD;
 			}
 		}
-		
+
 		presenter.present(response);
 	}
 

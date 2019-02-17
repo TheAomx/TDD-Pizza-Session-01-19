@@ -9,7 +9,7 @@ import de.ov.software.kata.tdd.y2019.v01.entities.User;
 public class InMemoryUserGateway implements UserGateway {
 
 	Map<String, User> users = new HashMap<>();
-	
+
 	@Override
 	public User save(User user) {
 		users.put(user.mailAddress, user);

@@ -11,7 +11,6 @@ import org.junit.Test;
 import de.ov.software.kata.tdd.y2019.v01.entities.User;
 import de.ov.software.kata.tdd.y2019.v01.gateways.LoginSessionGateway;
 import de.ov.software.kata.tdd.y2019.v01.gateways.UserGateway;
-import de.ov.software.kata.tdd.y2019.v01.usecases.login.LoginOutputBoundary;
 import de.ov.software.kata.tdd.y2019.v01.usecases.login.LoginRequestModel;
 import de.ov.software.kata.tdd.y2019.v01.usecases.login.LoginResponseModel;
 import de.ov.software.kata.tdd.y2019.v01.usecases.login.LoginState;
@@ -20,6 +19,7 @@ import de.ov.software.kata.tdd.y2019.v01.utils.Context;
 import de.ov.software.kata.tdd.y2019.v01.utils.TestSetup;
 
 public class LoginUseCaseTest {
+	private static final String VALID_IP_ADDRESS = "127.0.0.1";
 	private LoginUseCase usecase;
 	private LoginOutputBoundarySpy presenter;
 	private UserGateway userGateway;
@@ -38,7 +38,7 @@ public class LoginUseCaseTest {
 		LoginRequestModel request = new LoginRequestModel();
 		request.mail = "hello@world.com";
 		request.password = "Password";
-		request.ipAddress = "127.0.0.1";
+		request.ipAddress = VALID_IP_ADDRESS;
 		return request;
 	}
 
@@ -54,15 +54,42 @@ public class LoginUseCaseTest {
 		LoginRequestModel loginRequest = new LoginRequestModel();
 		loginRequest.mail = user.mailAddress;
 		loginRequest.password = "password";
-		loginRequest.ipAddress = "127.0.0.1";
+		loginRequest.ipAddress = VALID_IP_ADDRESS;
 		return loginRequest;
 	}
 
 	@Test
 	public void testUsecaseWiring() throws Exception {
 		LoginRequestModel request = createInvalidRequest();
+		
 		usecase.handleLogin(request, presenter);
+		
 		assertNotNull(presenter.response);
+	}
+	
+	@Test
+	public void LoginWithNullRequestFails() throws Exception {
+		usecase.handleLogin(null, presenter);
+		
+		assertNotNull(presenter.response);
+		LoginResponseModel response = presenter.response;
+		assertEquals(LoginState.INVALID_REQUEST, response.loginState);
+		assertNull(response.session);
+	}
+	
+	@Test
+	public void LoginWithNullValuesInRequestFails() throws Exception {
+		LoginRequestModel request = new LoginRequestModel();
+		request.mail = null;
+		request.ipAddress = null;
+		request.password = null;
+
+		usecase.handleLogin(request, presenter);
+		
+		assertNotNull(presenter.response);
+		LoginResponseModel response = presenter.response;
+		assertEquals(LoginState.INVALID_REQUEST, response.loginState);
+		assertNull(response.session);
 	}
 
 	@Test
@@ -70,12 +97,12 @@ public class LoginUseCaseTest {
 		LoginRequestModel loginRequest = new LoginRequestModel();
 		loginRequest.mail = "hello@world.com";
 		loginRequest.password = "Password";
+		loginRequest.ipAddress = VALID_IP_ADDRESS;
 
 		usecase.handleLogin(loginRequest, presenter);
 
 		LoginResponseModel response = presenter.response;
-		assertEquals(LoginState.INVALID_MAIL, response.loginState);
-		assertEquals(loginRequest.mail, response.mail);
+		assertEquals(LoginState.UNKNOWN_MAIL, response.loginState);
 		assertNull(response.session);
 	}
 
@@ -98,8 +125,22 @@ public class LoginUseCaseTest {
 		request.password = "invalid-password";
 
 		usecase.handleLogin(request, presenter);
+		
 		LoginResponseModel response = this.presenter.response;
 		assertEquals(LoginState.INVALID_PASSWORD, response.loginState);
+		assertEquals(request.mail, response.mail);
+		assertNull(response.session);
+	}
+	
+	@Test
+	public void testLoginWithInvalidMailAndValidPasswordIsDenied() throws Exception {
+		LoginRequestModel request = this.createValidLoginRequest();
+		request.mail = "unknown@unknown.org";
+
+		usecase.handleLogin(request, presenter);
+		
+		LoginResponseModel response = this.presenter.response;
+		assertEquals(LoginState.UNKNOWN_MAIL, response.loginState);
 		assertEquals(request.mail, response.mail);
 		assertNull(response.session);
 	}

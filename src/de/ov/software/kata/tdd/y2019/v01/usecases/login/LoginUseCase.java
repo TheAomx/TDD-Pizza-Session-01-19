@@ -1,5 +1,7 @@
 package de.ov.software.kata.tdd.y2019.v01.usecases.login;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -33,16 +35,34 @@ public class LoginUseCase {
 		}
 		return sb.toString();
 	}
+	
+	private boolean isValidRequest(LoginRequestModel request) {
+		if (request == null) {
+			return false;
+		}
+		
+		if (request.mail == null || request.password == null || request.ipAddress == null) {
+			return false;
+		}
+		
+		return true;
+	}
 
 	public void handleLogin(LoginRequestModel request, LoginOutputBoundary presenter) {
 		LoginResponseModel response = new LoginResponseModel();
+		if (!isValidRequest(request)) {
+			response.loginState = LoginState.INVALID_REQUEST;
+			presenter.present(response);
+			return;
+		}
+		
 		response.mail = request.mail;
 
 		UserGateway userGateway = Context.userGateway;
 		Optional<User> userOptional = userGateway.findUserByMail(request.mail);
 
 		if (!userOptional.isPresent()) {
-			response.loginState = LoginState.INVALID_MAIL;
+			response.loginState = LoginState.UNKNOWN_MAIL;
 		} else {
 			User user = userOptional.get();
 			if (user.passwordHash.equals(createPasswordHash(request.password))) {
@@ -60,7 +80,14 @@ public class LoginUseCase {
 	}
 
 	public static String createPasswordHash(String string) {
-		// TODO: Improve hashing of passwords with salt and more iterations...
+		// TODO: Improve hashing of passwords with more iterations and a salt ...
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			return new String(md.digest(string.getBytes()));
+		} catch (NoSuchAlgorithmException e) {
+			System.err.println("Can not find SHA-256 algorithm!");
+		}
+
 		return string;
 	}
 }

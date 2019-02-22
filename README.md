@@ -11,10 +11,10 @@ einer Anwendung mit einem wie beispielsweise die Klasse Kombination aus Mail-Adr
 Als Eingabe-Werte für den Login-Usecase sollen die drei Attribute "Mail-Adresse", "Passwort" und "IP-Adresse" für das Code-Kata ausreichen.
 Hierbei soll der Login-Usecase die Fälle abdecken, dass ein User 
 
-a) eine nicht in der Datenbank gespeicherte Mail-Adresse eingibt.
-b) ein ungültiges Passwort zu einer in der Datenbank gespeicherten Mail-Adresse angibt.
-c) eine gültige Kombination aus Mail-Adresse und Passwort eingibt.
-d) Null-Eingaben bzgl. des Requests, bzw. der Attribute Mail-Adresse, Passwort und IP-Adresse vornimmt.
+a. eine nicht in der Datenbank gespeicherte Mail-Adresse eingibt.
+b. ein ungültiges Passwort zu einer in der Datenbank gespeicherten Mail-Adresse angibt.
+c. eine gültige Kombination aus Mail-Adresse und Passwort eingibt.
+d. Null-Eingaben bzgl. des Requests, bzw. der Attribute Mail-Adresse, Passwort und IP-Adresse vornimmt.
 
 Falls der User einen gültigen Login-Versuch vorgenommen hat, soll vom Login-Usecase eine LoginSession erzeugt werden, bei welcher der die Mail-Adresse, ein zufälliger Access-Token, die beim Login verwendete IP-Adresse, der Login-Zeitpunkt sowie ein Ablaufdatum des Login-Session hinterlegt wird.
 
